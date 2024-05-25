@@ -21,4 +21,4 @@ def teardown_appcontext(code):
 
 
 if __name__ == "__main__":
-    app.run(host=HOST, port=PORT, threaded=True)
+    app.run(host=HOST, port=PORT, threaded=True, debug=True)
