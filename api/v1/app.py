@@ -20,4 +20,4 @@ def teardown_appcontext(code):
 
 
 if __name__ == "__main__":
-    app.run(host=HOST, port=PORT)
+    app.run(host=HOST, port=PORT, threaded=True)
