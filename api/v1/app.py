@@ -19,6 +19,7 @@ def teardown_appcontext(code):
     """Close storage in when flask app finish its process"""
     storage.close()
 
+
 @app.errorhandler(404)
 def not_found(e):
     """Handle 404 not found page"""
