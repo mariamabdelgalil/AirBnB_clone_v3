@@ -5,6 +5,7 @@ starts a Flask web application
 from flask import Flask
 from models import storage
 from api.v1.views import app_views
+from os import getenv
 HOST = getenv("HBNB_API_HOST") or '0.0.0.0'
 PORT = getenv("HBNB_API_PORT") or '5000'
 
