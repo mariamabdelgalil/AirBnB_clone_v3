@@ -21,6 +21,8 @@ def get_states():
 def get_state(state_id):
     """state route function"""
     state = storage.get(State, state_id)
+    if state is None:
+        abort(404)
     return jsonify(state.to_dict())
 
 
@@ -28,7 +30,6 @@ def get_state(state_id):
 def post_state():
     """post state route function"""
     if not request.get_json():
-        print("404")
         return make_response(jsonify({'error': 'Not a JSON'}), 400)
     if 'name' not in request.get_json():
         return make_response(jsonify({'error': 'Missing name'}), 400)
