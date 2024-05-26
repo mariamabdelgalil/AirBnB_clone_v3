@@ -31,4 +31,4 @@ def check_content_type():
 
 
 if __name__ == "__main__":
-    app.run(host=HOST, port=PORT)
+    app.run(host=HOST, port=PORT, threaded=True)
