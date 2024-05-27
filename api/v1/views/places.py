@@ -88,23 +88,21 @@ def put_place(place_id):
 
 @app_views.route('/places_search', methods=['POST'], strict_slashes=False)
 def post_places_search():
-    """searches for a place"""
+    """Searches for a place"""
     params = request.get_json()
-    if not params:
+    if params is None:
         return make_response(jsonify({'error': 'Not a JSON'}), 400)
 
     states = params.get('states', [])
     cities = params.get('cities', [])
     amenities = params.get('amenities', [])
 
-    amenity_objects = [storage.get(Amenity, amenity_id)
-                       for amenity_id in amenities
-                       if storage.get(Amenity, amenity_id)]
+    places = set()
 
-    if states == cities == []:
-        places = storage.all(Place).values()
+    # If no states and cities are provided, retrieve all places
+    if not states and not cities:
+        places = set(storage.all(Place).values())
     else:
-        places = []
         if states:
             for state_id in states:
                 state = storage.get(State, state_id)
@@ -112,24 +110,25 @@ def post_places_search():
                     for city in state.cities:
                         if city.id not in cities:
                             cities.append(city.id)
+
         if cities:
             for city_id in cities:
                 city = storage.get(City, city_id)
                 if city:
                     for place in city.places:
-                        places.append(place)
+                        places.add(place)
 
-    if amenity_objects:
+    # Filter places by amenities
+    if amenities:
         filtered_places = []
+        amenity_objects = [storage.get(Amenity, amenity_id)
+                           for amenity_id in amenities
+                           if storage.get(Amenity, amenity_id)]
+
         for place in places:
-            take = True
-            for amenity in amenity_objects:
-                if amenity not in place.amenities:
-                    take = False
-                    break
-            if take:
+            if all(amenity in place.amenities for amenity in amenity_objects):
                 filtered_places.append(place)
     else:
-        filtered_places = places
+        filtered_places = list(places)
 
     return jsonify([place.to_dict() for place in filtered_places])
