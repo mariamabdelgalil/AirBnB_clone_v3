@@ -101,21 +101,23 @@ def post_places_search():
                        for amenity_id in amenities
                        if storage.get(Amenity, amenity_id)]
 
-    if not states and not cities:
+    if states == cities == []:
         places = storage.all(Place).values()
     else:
-        places = set()
+        places = []
         if states:
             for state_id in states:
                 state = storage.get(State, state_id)
                 if state:
                     for city in state.cities:
-                        places.update(city.places)
+                        if city.id not in cities:
+                            cities.append(city.id)
         if cities:
             for city_id in cities:
                 city = storage.get(City, city_id)
                 if city:
-                    places.update(city.places)
+                    for place in city.places:
+                        places.append(place)
 
     if amenity_objects:
         filtered_places = []
@@ -128,6 +130,6 @@ def post_places_search():
             if take:
                 filtered_places.append(place)
     else:
-        filtered_places = list(places)
+        filtered_places = places
 
     return jsonify([place.to_dict() for place in filtered_places])
