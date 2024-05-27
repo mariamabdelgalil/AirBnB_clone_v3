@@ -7,6 +7,8 @@ from models import storage
 from models.city import City
 from models.place import Place
 from models.user import User
+from models.amenity import Amenity
+from models.state import State
 
 
 @app_views.route('/cities/<string:city_id>/places', methods=['GET'],
@@ -90,34 +92,47 @@ def post_places_search():
     params = request.get_json()
     if not params:
         return make_response(jsonify({'error': 'Not a JSON'}), 400)
-    
+
     states = params.get('states', [])
     cities = params.get('cities', [])
     amenities = params.get('amenities', [])
-    
-    # Get amenity objects
-    amenity_objects = [storage.get('Amenity', amenity_id) for amenity_id in amenities if storage.get('Amenity', amenity_id)]
-    
+
+    amenity_objects = [storage.get(Amenity, amenity_id)
+                       for amenity_id in amenities
+                       if storage.get(Amenity, amenity_id)]
+
     if not states and not cities:
-        places = storage.all('Place').values()
+        places = storage.all(Place).values()
     else:
         places = set()
         if states:
             for state_id in states:
-                state = storage.get('State', state_id)
+                state = storage.get(State, state_id)
                 if state:
                     for city in state.cities:
                         places.update(city.places)
         if cities:
             for city_id in cities:
-                city = storage.get('City', city_id)
+                city = storage.get(City, city_id)
                 if city:
                     places.update(city.places)
-    
-    # Filter places by amenities
+
     if amenity_objects:
-        confirmed_places = [place for place in places if all(amenity in place.amenities for amenity in amenity_objects)]
+        filtered_places = []
+        for place in places:
+            take = True
+            for amenity in place.amenities:
+                amenity_ok = False
+                for amenity_ in amenity_objects:
+                    if amenity_ == amenity:
+                        amenity_ok = True
+                        break
+                if not amenity_ok:
+                    take = False
+                    break
+            if take:
+                filtered_places.append(place)
     else:
-        confirmed_places = list(places)
-    
-    return jsonify([place.to_dict() for place in confirmed_places])
+        filtered_places = list(places)
+
+    return jsonify([place.to_dict() for place in filtered_places])
