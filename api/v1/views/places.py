@@ -121,13 +121,8 @@ def post_places_search():
         filtered_places = []
         for place in places:
             take = True
-            for amenity in place.amenities:
-                amenity_ok = False
-                for amenity_ in amenity_objects:
-                    if amenity_ == amenity:
-                        amenity_ok = True
-                        break
-                if not amenity_ok:
+            for amenity in amenity_objects:
+                if amenity not in place.amenities:
                     take = False
                     break
             if take:
